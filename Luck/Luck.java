@@ -9,7 +9,7 @@ public class Luck {
     private int k;
     private int t;
 
-    public Luck(int a, int b, int c, int d) {
+    public Luck() {
         this.x = x;
         this.y = y;
         this.z = z;
