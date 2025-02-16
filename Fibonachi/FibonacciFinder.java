@@ -1,29 +1,39 @@
 package org.example;
 
 import java.util.Scanner;
+public class Main {
 
-public class FibonacciFinder {
-    public static boolean isFibonacci(int number) {
-        return isPerfectSquare(5 * number * number + 4) || isPerfectSquare(5 * number * number - 4);
+    public static double function(double x) {
+        return x*x*x + x + 1;
     }
+    public static double findRoot(double a, double b, double aim) {
 
-    private static boolean isPerfectSquare(int x) {
-        int s = (int) Math.sqrt(x);
-        return (s * s == x);
+        double mid;
+
+        if (function(a) * function(b) > 0) {
+            throw new IllegalArgumentException("На заданном интервале нет корня или их четное количество.");
+        }
+
+        while ((b - a) / 2 > aim) {
+            mid = (a + b) / 2;
+            if (function(mid) == 0.0) {
+                return mid;
+            } else if (function(a) * function(mid) < 0) {
+                b = mid;
+            } else {
+                a = mid;
+            }
+        }
+        return (a + b) / 2;
     }
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        Scanner console = new Scanner(System.in);
+        double a = console.nextDouble();
+        double b = console.nextDouble();
+        double aim = console.nextDouble();
 
-        System.out.print("Введите число для проверки: ");
-        int number = scanner.nextInt();
-
-        if (isFibonacci(number)) {
-            System.out.println(number + " является числом Фибоначчи.");
-        } else {
-            System.out.println(number + " не является числом Фибоначчи.");
-        }
-
-        scanner.close();
+        double root = findRoot(a, b, aim);
+        System.out.println("Найденный корень: " + root);
     }
 }
