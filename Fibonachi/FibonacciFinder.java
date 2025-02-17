@@ -15,7 +15,7 @@ public class FibonacciFinder {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Введите число для проверки(от 1 до 2*10^9: ");
+        System.out.print("Введите число для проверки(от 1 до 2*10^9): ");
         int number = scanner.nextInt();
 
         if (isFibonacci(number)) {
