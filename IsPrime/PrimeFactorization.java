@@ -24,8 +24,6 @@ public class PrimeFactorization {
         if (number > 2) {
             System.out.print(number);
         }
-
-        System.out.println();
     }
 
     public static void main(String[] args) {
