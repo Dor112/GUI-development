@@ -79,14 +79,6 @@ public class NumberProcessor {
         return variance / numbers.size();
     }
 
-    public static void quickSort(List<Integer> numbers, int low, int high) {
-        if (low < high) {
-            int pi = partition(numbers, low, high);
-            quickSort(numbers, low, pi - 1);
-            quickSort(numbers, pi + 1, high);
-        }
-    }
-
     private static int partition(List<Integer> numbers, int low, int high) {
         int pivot = numbers.get(high);
         int i = (low - 1);
@@ -103,6 +95,16 @@ public class NumberProcessor {
         numbers.set(high, temp);
         return i + 1;
     }
+
+    public static void quickSort(List<Integer> numbers, int low, int high) {
+        if (low < high) {
+            int pi = partition(numbers, low, high);
+            quickSort(numbers, low, pi - 1);
+            quickSort(numbers, pi + 1, high);
+        }
+    }
+
+
 
     public static void printArray(List<Integer> numbers) {
         System.out.print("Массив: [");
