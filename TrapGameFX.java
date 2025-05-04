@@ -1,17 +1,22 @@
-package com.example.javafx;
+package com.example.javafx17;
+
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import java.util.Random;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Arrays;
 
-public class TrapGameFX extends Application {
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+
+public class HelloApplication extends Application {
     private static final char CLOSED = '#';
     private static final char TRAP = '*';
     private static final int[] dx = {-1, -1, -1, 0, 0, 1, 1, 1};
@@ -78,6 +83,9 @@ public class TrapGameFX extends Application {
                 if (opened[i][j] && !traps[i][j]) {
                     int count = countAdjacentTraps(i, j);
                     field[i][j] = (char) ('0' + count);
+                    if (opened[i][j]){
+                        buttons[i][j].setText(String.valueOf(field[i][j]));
+                    }
                 }
             }
         }
@@ -116,7 +124,7 @@ public class TrapGameFX extends Application {
             } while (traps[x][y] || opened[x][y]);
             traps[x][y] = true;
         }
-
+        updateHints();
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Ловушки переместились!");
         alert.setHeaderText(null);
@@ -199,9 +207,11 @@ public class TrapGameFX extends Application {
                 if (opened[i][j]) {
                     buttons[i][j].setText(String.valueOf(field[i][j]));
                     buttons[i][j].setDisable(true);
+
                 } else {
                     buttons[i][j].setText(String.valueOf(CLOSED));
                     buttons[i][j].setDisable(false);
+
                 }
             }
         }
