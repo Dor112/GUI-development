@@ -1,4 +1,4 @@
-package org.example.gui_development_newest;
+package com.example.javafx17;
 
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
@@ -19,7 +19,8 @@ public class FlyingButtonsApp extends Application {
     private static final double WIDTH = 800;
     private static final double HEIGHT = 600;
     private static final int MAX_COLLISIONS = 5;
-    private static final int MAX_BUTTONS = 100;
+    private static final int MAX_BUTTONS = 1000;
+    private static final double MIN_SEPARATION = BUTTON_SIZE * 1.2;
 
     private final List<MovingButton> buttons = new ArrayList<>();
     private final Random random = new Random();
@@ -48,40 +49,49 @@ public class FlyingButtonsApp extends Application {
     }
 
     private void updateButtons(Pane root) {
+
         for (MovingButton mb : buttons) {
             mb.move();
+        }
 
+
+        for (MovingButton mb : buttons) {
             boolean collided = false;
+
 
             if (mb.x <= 0 || mb.x + BUTTON_SIZE >= WIDTH) {
                 mb.dx *= -1;
+                mb.x = clamp(mb.x, 0, WIDTH - BUTTON_SIZE);
                 collided = true;
             }
             if (mb.y <= 0 || mb.y + BUTTON_SIZE >= HEIGHT) {
                 mb.dy *= -1;
+                mb.y = clamp(mb.y, 0, HEIGHT - BUTTON_SIZE);
                 collided = true;
             }
 
+
             for (MovingButton other : buttons) {
                 if (other != mb && mb.intersects(other)) {
-                    mb.dx *= -1;
-                    mb.dy *= -1;
+                    handleCollision(mb, other);
                     collided = true;
                     break;
                 }
             }
 
+
             if (collided) {
                 mb.collisions++;
 
-                if (mb.collisions == MAX_COLLISIONS && !mb.splitScheduled) {
+                if (mb.collisions >= MAX_COLLISIONS && !mb.splitScheduled && buttons.size() < MAX_BUTTONS) {
                     mb.splitScheduled = true;
 
-                    PauseTransition delay = new PauseTransition(Duration.seconds(2));
+                    PauseTransition delay = new PauseTransition(Duration.seconds(0.5));
                     delay.setOnFinished(e -> {
-                        if (buttons.size() < MAX_BUTTONS && !spawnButtonsAround(mb, root)) {
-                            mb.splitScheduled = false;  // Не делим, если не нашли места
+                        if (spawnButtonsAround(mb, root)) {
+                            mb.collisions = 0;
                         }
+                        mb.splitScheduled = false;
                     });
                     delay.play();
                 }
@@ -89,38 +99,65 @@ public class FlyingButtonsApp extends Application {
         }
     }
 
+    private void handleCollision(MovingButton btn1, MovingButton btn2) {
+
+        btn1.dx *= -1;
+        btn1.dy *= -1;
+        btn2.dx *= -1;
+        btn2.dy *= -1;
+
+
+        double dx = btn2.x - btn1.x;
+        double dy = btn2.y - btn1.y;
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        double minDistance = BUTTON_SIZE;
+
+        if (distance < minDistance) {
+            double angle = Math.atan2(dy, dx);
+            double targetX = btn1.x + Math.cos(angle) * minDistance;
+            double targetY = btn1.y + Math.sin(angle) * minDistance;
+
+
+            btn2.x = targetX;
+            btn2.y = targetY;
+
+
+            btn2.x = clamp(btn2.x, 0, WIDTH - BUTTON_SIZE);
+            btn2.y = clamp(btn2.y, 0, HEIGHT - BUTTON_SIZE);
+        }
+    }
+
     private boolean spawnButtonsAround(MovingButton source, Pane root) {
-        double[][] offsets = {
-                {-60, -60}, {60, -60}, {-60, 60}, {60, 60}
-        };
+        int newButtonsCount = 0;
+        int maxAttempts = 20;
+        // Пытаемся создать 4 новые кнопки вокруг исходной
+        for (int i = 0; i < 4 && buttons.size() < MAX_BUTTONS; i++) {
+            double angle = i * Math.PI / 2;
+            double distance = BUTTON_SIZE * 1.5;
 
-        boolean buttonsCreated = false;
+            for (int attempt = 0; attempt < maxAttempts; attempt++) {
 
-        for (double[] offset : offsets) {
-            int attempts = 0;
-            boolean foundSpot = false;
+                double offsetX = (random.nextDouble() - 0.5) * BUTTON_SIZE * 0.5;
+                double offsetY = (random.nextDouble() - 0.5) * BUTTON_SIZE * 0.5;
 
-            while (attempts < 10) {
-                double newX = clamp(source.x + offset[0] + random.nextDouble() * 10 - 5, 0, WIDTH - BUTTON_SIZE);
-                double newY = clamp(source.y + offset[1] + random.nextDouble() * 10 - 5, 0, HEIGHT - BUTTON_SIZE);
+                double newX = source.x + Math.cos(angle) * distance + offsetX;
+                double newY = source.y + Math.sin(angle) * distance + offsetY;
+
+                newX = clamp(newX, 0, WIDTH - BUTTON_SIZE);
+                newY = clamp(newY, 0, HEIGHT - BUTTON_SIZE);
+
                 MovingButton newBtn = new MovingButton(newX, newY);
 
                 if (!intersectsAny(newBtn)) {
                     buttons.add(newBtn);
                     root.getChildren().add(newBtn.button);
-                    foundSpot = true;
-                    buttonsCreated = true;
+                    newButtonsCount++;
                     break;
                 }
-                attempts++;
-            }
-
-            if (!foundSpot) {
-                break;  // Если хотя бы одно место не найдено, прекращаем деление
             }
         }
 
-        return buttonsCreated;
+        return newButtonsCount > 0;
     }
 
     private boolean intersectsAny(MovingButton newBtn) {
@@ -146,8 +183,8 @@ public class FlyingButtonsApp extends Application {
         public MovingButton(double startX, double startY) {
             this.x = startX;
             this.y = startY;
-            this.dx = random.nextDouble() * 4 + 1;
-            this.dy = random.nextDouble() * 4 + 1;
+            this.dx = (random.nextDouble() - 0.5) * 8 + 1;
+            this.dy = (random.nextDouble() - 0.5) * 8 + 1;
             this.button = new Button("Btn");
             this.button.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
             this.button.setLayoutX(x);
@@ -162,7 +199,10 @@ public class FlyingButtonsApp extends Application {
         }
 
         public boolean intersects(MovingButton other) {
-            return button.getBoundsInParent().intersects(other.button.getBoundsInParent());
+            double dx = this.x - other.x;
+            double dy = this.y - other.y;
+            double distance = Math.sqrt(dx * dx + dy * dy);
+            return distance < BUTTON_SIZE;
         }
     }
 
