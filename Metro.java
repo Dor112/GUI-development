@@ -155,11 +155,15 @@ public class MetroApp extends Application {
             gc.setLineWidth(4);
 
             List<Station> stations = metroMap.getStationsOnLine(line);
-            for (int i = 0; i < stations.size() - 1; i++) {
+            int i = 0;
+            for (; i < stations.size() - 1; i++) {
                 Station s1 = stations.get(i);
                 Station s2 = stations.get(i+1);
                 gc.strokeLine(s1.getX(), s1.getY(), s2.getX(), s2.getY());
             }
+            Station s1 = stations.get(i-1);
+            Station s2 = stations.get(0);
+            gc.strokeLine(s1.getX(), s1.getY(), s2.getX(), s2.getY());
         }
 
         // Рисуем станции
@@ -168,7 +172,7 @@ public class MetroApp extends Application {
             gc.setStroke(Color.BLACK);
             gc.setLineWidth(2);
 
-            double radius = station.isTransfer() ? 8 : 6;
+            double radius = station.isTransfer() ? 8:0;
             gc.fillOval(station.getX() - radius, station.getY() - radius, radius * 2, radius * 2);
             gc.strokeOval(station.getX() - radius, station.getY() - radius, radius * 2, radius * 2);
 
@@ -311,7 +315,7 @@ public class MetroApp extends Application {
         public List<Station> getStationsOnLine(Line line) {
             return stations.stream()
                     .filter(s -> s.getLine().equals(line))
-                    .sorted(Comparator.comparingDouble(Station::getX))
+                    .sorted(Comparator.comparingDouble(Station::getId))
                     .collect(Collectors.toList());
         }
 
